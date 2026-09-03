@@ -1,0 +1,45 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'remotescope'
+
+rule_files: []
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Go backend — exposes metrics at /metrics via gin-prometheus (if added)
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['backend:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Python AI service — FastAPI exposes /metrics via prometheus-fastapi-instrumentator
+  - job_name: 'ai_service'
+    static_configs:
+      - targets: ['ai_service:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Scraper service — basic process metrics
+  - job_name: 'scraper'
+    static_configs:
+      - targets: ['scraper:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 60s
+
+  # PostgreSQL exporter (if deployed separately)
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # Redis exporter (if deployed separately)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
